@@ -131,41 +131,45 @@ def pure_literal_rule(clauses, assignment):
 
 def split(clauses, assignment, num_vars):
     """
-    Chosen heuristic for splitting: DLCS
-    Dynamic largest combined sum: CP(v) + CN(v) (= most frequent v)
-    If CP(v)>CN(v) then v=1 else v=0
+    Chosen heuristic for splitting: Jeroslow Wang Two Sided
+    
     """
-    pos_count = {}
-    neg_count = {}
+    pos_score = {}
+    neg_score = {}
 
     for c in clauses:
-      for lit in c:
-        var = abs(lit)
-        # already assigned, so skip
-        if var in assignment:
-            continue
-        # count positive occurences of literal
-        if lit > 0:
-            pos_count[var] = pos_count.get(var, 0) + 1
-        # count negative occurences of literal
-        else:
-            neg_count[var] = neg_count.get(var, 0) + 1
+        # every clause gets a weight dependend on it's length
+        weight = 2 ** (-len(c))
+        # loop through literals in clause
+        for lit in c:
+            var = abs(lit)
+            # already assigned, so skip
+            if var in assignment:
+                continue
+            # add the positive scores of the variable
+            if lit > 0:
+                pos_score[var] = pos_score.get(var, 0.0) + weight
+            # add the negative scores of the variable
+            else:
+                neg_score[var] = neg_score.get(var, 0.0) + weight
 
+    # pick best variable
     best_var = None
-    best_score = -1
+    best_score = -1.0
     best_pref = True
 
     for var in range(1, num_vars + 1):
-      if var in assignment:
-        continue
-      p = pos_count.get(var, 0)
-      n = neg_count.get(var, 0)
-      score = p + n
-      # update best score
-      if score > best_score:
-        best_score = score
-        best_var = var
-        best_pref = (p >= n)
+        # already assigned, so skip
+        if var in assignment:
+            continue
+        p = pos_score.get(var, 0.0)
+        n = neg_score.get(var, 0.0)
+        score = p + n
+        # update best score
+        if score > best_score:
+            best_score = score
+            best_var = var
+            best_pref = (p >= n)
 
     return best_var, best_pref
 
@@ -269,6 +273,5 @@ def solve_cnf(clauses, num_vars):
       return "UNSAT", None
 
 # python main.py --in puzzle.txt
-
 # command to run in terminal: python3 main.py --in ../"EXAMPLE puzzles (input)"/example_n9.txt  --out example.cnf
 
