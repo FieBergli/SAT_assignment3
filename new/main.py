@@ -43,14 +43,13 @@ def main():
 
     status, _ = solve_cnf_random(clauses, num_vars)
     print(status)
-    """
     status, _ = solve_cnf_dlcs(clauses, num_vars)
     print(status)
     status, _ = solve_cnf_jw(clauses, num_vars)
     print(status)
     status, _ = solve_cnf_mom(clauses, num_vars)
     print(status)
-    """
+
 
 def parse_dimacs(input_path: str) -> Tuple[Iterable[Iterable[int]], int]:
     close = False
@@ -89,4 +88,4 @@ def parse_dimacs(input_path: str) -> Tuple[Iterable[Iterable[int]], int]:
     return clauses, num_vars
 
 if __name__ == "__main__":
-    main()
+   main()
