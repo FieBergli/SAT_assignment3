@@ -7,6 +7,7 @@ Implement: solve_cnf(clauses) -> (status, model_or_None)"""
 
 
 from typing import Iterable, List, Tuple, Set, Dict
+import time
 
 
 def convert_clauses(clauses):
@@ -251,7 +252,7 @@ def build_model(assignment, num_vars):
         model.append(v if val else -v)
     return model
 
-def solve_cnf(clauses, num_vars):
+def solve_cnf_dlcs(clauses, num_vars):
     """
     Implement your SAT solver here.
     Must return:
@@ -260,7 +261,12 @@ def solve_cnf(clauses, num_vars):
     """
   
     clause_sets = convert_clauses(clauses)
+    t0 = time.perf_counter()
     sat, assignment = dpll(clause_sets, {}, num_vars)
+    t1 = time.perf_counter()
+    runtime = t1 - t0
+    print(f"Runtime DLCS: {runtime}")
+
     
     if sat:
       model = build_model(assignment, num_vars)

@@ -8,6 +8,7 @@ Implement: solve_cnf(clauses) -> (status, model_or_None)"""
 
 from typing import Iterable, List, Tuple, Set, Dict
 import time
+import random
 
 
 def convert_clauses(clauses):
@@ -132,47 +133,20 @@ def pure_literal_rule(clauses, assignment):
 
 def split(clauses, assignment, num_vars):
     """
-    Chosen heuristic for splitting: Jeroslow Wang Two Sided
-    
+    Chosen heuristic for splitting: Random
     """
-    pos_score = {}
-    neg_score = {}
+    # collect all unassigned variables
+    unassigned = [v for v in range(1, num_vars + 1) if v not in assignment]
+    
+    if not unassigned:
+        return None, True  # no variable left to assign
 
-    for c in clauses:
-        # every clause gets a weight dependend on it's length
-        weight = 2 ** (-len(c))
-        # loop through literals in clause
-        for lit in c:
-            var = abs(lit)
-            # already assigned, so skip
-            if var in assignment:
-                continue
-            # add the positive scores of the variable
-            if lit > 0:
-                pos_score[var] = pos_score.get(var, 0.0) + weight
-            # add the negative scores of the variable
-            else:
-                neg_score[var] = neg_score.get(var, 0.0) + weight
+    # choose a random variable
+    var = random.choice(unassigned)
+    # choose a random polarity
+    pref_val = random.choice([True, False])
 
-    # pick best variable
-    best_var = None
-    best_score = -1.0
-    best_pref = True
-
-    for var in range(1, num_vars + 1):
-        # already assigned, so skip
-        if var in assignment:
-            continue
-        p = pos_score.get(var, 0.0)
-        n = neg_score.get(var, 0.0)
-        score = p + n
-        # update best score
-        if score > best_score:
-            best_score = score
-            best_var = var
-            best_pref = (p >= n)
-
-    return best_var, best_pref
+    return var, pref_val
 
 
 # --------------------
@@ -256,7 +230,7 @@ def build_model(assignment, num_vars):
         model.append(v if val else -v)
     return model
 
-def solve_cnf_jw(clauses, num_vars):
+def solve_cnf_random(clauses, num_vars):
     """
     Implement your SAT solver here.
     Must return:
@@ -269,7 +243,9 @@ def solve_cnf_jw(clauses, num_vars):
     sat, assignment = dpll(clause_sets, {}, num_vars)
     t1 = time.perf_counter()
     runtime = t1 - t0
-    print(f"Runtime JW: {runtime}")
+    print(f"Runtime Random: {runtime}")
+
+    
     if sat:
       model = build_model(assignment, num_vars)
       return "SAT", model
@@ -277,5 +253,6 @@ def solve_cnf_jw(clauses, num_vars):
       return "UNSAT", None
 
 # python main.py --in puzzle.txt
+
 # command to run in terminal: python3 main.py --in ../"EXAMPLE puzzles (input)"/example_n9.txt  --out example.cnf
 

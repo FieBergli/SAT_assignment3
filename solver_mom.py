@@ -135,42 +135,40 @@ def split(clauses, assignment, num_vars):
     Chosen heuristic for splitting: Jeroslow Wang Two Sided
     
     """
-    pos_score = {}
-    neg_score = {}
+    # filter out clauses that contain only unassigned variables
+    unassigned_clauses = [
+        c for c in clauses if not all(abs(l) in assignment for l in c)
+    ]
+    if not unassigned_clauses:
+        return None, True
 
-    for c in clauses:
-        # every clause gets a weight dependend on it's length
-        weight = 2 ** (-len(c))
-        # loop through literals in clause
+    # find the minimum clause length
+    min_len = min(len(c) for c in unassigned_clauses)
+
+    # collect only the shortest clauses
+    min_clauses = [c for c in unassigned_clauses if len(c) == min_len]
+
+    # count literal occurrences
+    scores = {}
+    for c in min_clauses:
         for lit in c:
             var = abs(lit)
-            # already assigned, so skip
             if var in assignment:
                 continue
-            # add the positive scores of the variable
-            if lit > 0:
-                pos_score[var] = pos_score.get(var, 0.0) + weight
-            # add the negative scores of the variable
-            else:
-                neg_score[var] = neg_score.get(var, 0.0) + weight
+            scores[var] = scores.get(var, 0) + 1
 
-    # pick best variable
-    best_var = None
-    best_score = -1.0
-    best_pref = True
+    # pick variable with maximum score
+    best_var = max(scores, key=scores.get)
+    # choose preferred polarity = whichever appears more often
+    pol_score = 0
+    for c in min_clauses:
+        if best_var in c:
+            pol_score += 1
+        if -best_var in c:
+            pol_score -= 1
 
-    for var in range(1, num_vars + 1):
-        # already assigned, so skip
-        if var in assignment:
-            continue
-        p = pos_score.get(var, 0.0)
-        n = neg_score.get(var, 0.0)
-        score = p + n
-        # update best score
-        if score > best_score:
-            best_score = score
-            best_var = var
-            best_pref = (p >= n)
+    # prefer polarity with highest occurrence
+    best_pref = pol_score >= 0
 
     return best_var, best_pref
 
@@ -256,7 +254,7 @@ def build_model(assignment, num_vars):
         model.append(v if val else -v)
     return model
 
-def solve_cnf_jw(clauses, num_vars):
+def solve_cnf_mom(clauses, num_vars):
     """
     Implement your SAT solver here.
     Must return:
@@ -269,7 +267,7 @@ def solve_cnf_jw(clauses, num_vars):
     sat, assignment = dpll(clause_sets, {}, num_vars)
     t1 = time.perf_counter()
     runtime = t1 - t0
-    print(f"Runtime JW: {runtime}")
+    print(f"Runtime MOM: {runtime}")
     if sat:
       model = build_model(assignment, num_vars)
       return "SAT", model

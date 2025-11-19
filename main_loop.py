@@ -20,9 +20,6 @@ import argparse
 from typing import Tuple, Iterable
 from encoder import to_cnf
 from solver_random import solve_cnf_random
-from solver import solve_cnf_dlcs
-from solver_jw import solve_cnf_jw
-from solver_mom import solve_cnf_mom
 
 
 def parse_args():
@@ -34,20 +31,13 @@ def parse_args():
 def main():
 
     args = parse_args()
-    print(args.inp)
 
     if(args.sat):
       clauses, num_vars = parse_dimacs(args.inp)
     else:
       clauses, num_vars = to_cnf(args.inp)
 
-    status, _ = solve_cnf_random(clauses, num_vars)
-    print(status)
-    status, _ = solve_cnf_dlcs(clauses, num_vars)
-    print(status)
-    status, _ = solve_cnf_jw(clauses, num_vars)
-    print(status)
-    status, _ = solve_cnf_mom(clauses, num_vars)
+    status, _ = solve_cnf(clauses, num_vars)
     print(status)
 
 
