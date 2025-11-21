@@ -41,16 +41,16 @@ def main():
     else:
       clauses, num_vars = to_cnf(args.inp)
 
-    status, _ = solve_cnf_random(clauses, num_vars)
-    print(status)
-    """
-    status, _ = solve_cnf_dlcs(clauses, num_vars)
-    print(status)
+    #status, _ = solve_cnf_random(clauses, num_vars)
+    #print(status)
+
+    #status, _ = solve_cnf_dlcs(clauses, num_vars)
+    #print(status)
     status, _ = solve_cnf_jw(clauses, num_vars)
     print(status)
-    status, _ = solve_cnf_mom(clauses, num_vars)
-    print(status)
-    """
+    #status, _ = solve_cnf_mom(clauses, num_vars)
+    #print(status)
+
 
 def parse_dimacs(input_path: str) -> Tuple[Iterable[Iterable[int]], int]:
     close = False
