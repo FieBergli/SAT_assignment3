@@ -15,7 +15,9 @@ Behavior:
      or
         UNSAT
 """
-
+import sys, os
+# add parent folder to the Python module search path
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import argparse
 from typing import Tuple, Iterable
 from encoder import to_cnf

@@ -207,6 +207,8 @@ def simplify_after_assignment(clauses, lit):
 
 def dpll(clauses, assignment, num_vars, counters):
     """Recursive DPLL."""
+    #count recursive calls
+    counters['calls'] += 1
     # 1. Unit clause rule
     clauses, assignment, conflict = unit_clause_rule(clauses, assignment)
     if conflict:
@@ -266,7 +268,7 @@ def solve_cnf_jw(clauses, num_vars):
       ("SAT", model)  where model is a list of ints (DIMACS-style), or
       ("UNSAT", None)
     """
-    init_counters = {"splits": 0, "backtracks": 0}
+    init_counters = {"splits": 0, "backtracks": 0, 'calls': 0}
   
     clause_sets = convert_clauses(clauses)
     t0 = time.perf_counter()
@@ -276,7 +278,8 @@ def solve_cnf_jw(clauses, num_vars):
     print(f"Runtime JW: {runtime}")
     print(f"Splits JW: {counters['splits']}")
     print(f"Backtracks JW: {counters['backtracks']}")
-
+    print(f"Recursive calls JW: {counters['calls']}")
+    
     if sat:
       model = build_model(assignment, num_vars)
       return "SAT", model
