@@ -24,24 +24,48 @@ from solver import solve_cnf_dlcs
 from solver_jw import solve_cnf_jw
 from solver_mom import solve_cnf_mom
 import os
+import pathlib
+import re
+
+
+def get_case_id(path: str) -> int:
+    CASE_RE = re.compile(r".*uf\d+-0(\d+)\.cnf$", re.IGNORECASE)
+    m = CASE_RE.search(path)
+    if not m:
+        return float("inf")
+    return int(m.group(1))
+
 
 def parse_args():
     import argparse
+
     p = argparse.ArgumentParser()
     p.add_argument("--in", dest="inp", required=True, help="Input file path")
-    p.add_argument("--cnf", dest="cnf", action="store_true", help="Treat input as DIMACS CNF")
+    p.add_argument(
+        "--cnf", dest="cnf", action="store_true", help="Treat input as DIMACS CNF"
+    )
+    p.add_argument(
+        "--out",
+        dest="out",
+        type=str,
+        default="out.txt",
+        help="Output path",
+    )
     return p.parse_args()
 
 
 def main():
     args = parse_args()
-
+    # Output file
+    output_file = pathlib.Path(args.out)
+    # Clear file content
+    output_file.write_text("")
     # Build list of files to process
     input_paths = []
 
     if os.path.isdir(args.inp):
         # Folder: run all .cnf files if --cnf was given
-        for name in sorted(os.listdir(args.inp)):
+        for name in os.listdir(args.inp):
             full = os.path.join(args.inp, name)
             if not os.path.isfile(full):
                 continue
@@ -52,9 +76,10 @@ def main():
         # Single file
         input_paths.append(args.inp)
 
+    input_paths.sort(key=get_case_id)
     # Run each file
     for path in input_paths:
-        print(path)
+        string = path + "\n"
 
         if args.cnf:
             clauses, num_vars = read_dimacs(path)
@@ -62,24 +87,28 @@ def main():
             clauses, num_vars = to_cnf(path)
 
         # ---- RANDOM ----
-        status, _ = solve_cnf_random(clauses, num_vars)
-        print(status)
+        status, _, stats = solve_cnf_random(clauses, num_vars)
+        string += status + "\n" + stats + "\n"
 
         # ---- DLCS ----
-        status, _ = solve_cnf_dlcs(clauses, num_vars)
-        print(status)
+        status, _, stats = solve_cnf_dlcs(clauses, num_vars)
+        string += status + "\n" + stats + "\n"
 
         # ---- JW ----
-        status, _ = solve_cnf_jw(clauses, num_vars)
-        print(status)
+        status, _, stats = solve_cnf_jw(clauses, num_vars)
+        string += status + "\n" + stats + "\n"
 
         # ---- MOM ----
-        status, _ = solve_cnf_mom(clauses, num_vars)
-        print(status)
+        status, _, stats = solve_cnf_mom(clauses, num_vars)
+        string += status + "\n" + stats + "\n"
 
         # Optional separator
-        print("-" * 40)
+        string += "-" * 40 + "\n"
 
+        # Write to output file and std out
+        print(string)
+        with output_file.open("a") as f:
+            f.write(string)
 
 
 def parse_dimacs(input_path: str) -> Tuple[Iterable[Iterable[int]], int]:
@@ -90,37 +119,38 @@ def parse_dimacs(input_path: str) -> Tuple[Iterable[Iterable[int]], int]:
     else:
         file = input_path
 
-
     line = file.readline()
 
     components = line.strip().split(" ")
 
-    if len(components)!= 4 or components[0]!="p" or components[1]!="cnf":
-      print("Wrong file format! Expected first line to be 'p cnf NUM_VARS NUM_CLAUSES")
-      exit(1)
+    if len(components) != 4 or components[0] != "p" or components[1] != "cnf":
+        print(
+            "Wrong file format! Expected first line to be 'p cnf NUM_VARS NUM_CLAUSES"
+        )
+        exit(1)
 
-    num_vars=int(components[2])
-    num_clauses=int(components[3])
+    num_vars = int(components[2])
+    num_clauses = int(components[3])
 
-    clauses=[]
+    clauses = []
 
-    line=file.readline()
-    while(line):
-       numbers = [int(x) for x in line.strip().split(" ")]
+    line = file.readline()
+    while line:
+        numbers = [int(x) for x in line.strip().split(" ")]
 
-       if(numbers[-1]!=0):
-          print("Wrong format! Clause lines must be terminated with a 0")
+        if numbers[-1] != 0:
+            print("Wrong format! Clause lines must be terminated with a 0")
 
-       clauses.append(numbers[:-1])
+        clauses.append(numbers[:-1])
 
-       line=file.readline()
-
+        line = file.readline()
 
     return clauses, num_vars
 
+
 if __name__ == "__main__":
-   main()
+    main()
 
 # python3 main.py --in uf50-218/uf50-01.cnf --cnf
 
-#to create a file python3 main.py --in uf50-218 --cnf | tee results.txt
+# to create a file python3 main.py --in uf50-218 --cnf | tee results.txt
