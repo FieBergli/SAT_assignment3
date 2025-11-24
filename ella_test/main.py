@@ -122,3 +122,5 @@ if __name__ == "__main__":
    main()
 
 # python3 main.py --in uf50-218/uf50-01.cnf --cnf
+
+#to create a file python3 main.py --in uf50-218 --cnf | tee results.txt
