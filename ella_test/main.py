@@ -151,6 +151,5 @@ def parse_dimacs(input_path: str) -> Tuple[Iterable[Iterable[int]], int]:
 if __name__ == "__main__":
     main()
 
-# python3 main.py --in uf50-218/uf50-01.cnf --cnf
 
-# to create a file python3 main.py --in uf50-218 --cnf | tee results.txt
+# python3 main.py --in <instance folder> --cnf --out <output file name>.txt
