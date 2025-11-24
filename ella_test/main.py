@@ -23,7 +23,7 @@ from solver_random import solve_cnf_random
 from solver import solve_cnf_dlcs
 from solver_jw import solve_cnf_jw
 from solver_mom import solve_cnf_mom
-
+import os
 
 def parse_args():
     import argparse
@@ -34,25 +34,52 @@ def parse_args():
 
 
 def main():
-
     args = parse_args()
-    print(args.inp)
 
-    if args.cnf:
-        # DIMACS CNF file (random 3-SAT, SAT benchmarks)
-        clauses, num_vars = read_dimacs(args.inp)
+    # Build list of files to process
+    input_paths = []
+
+    if os.path.isdir(args.inp):
+        # Folder: run all .cnf files if --cnf was given
+        for name in sorted(os.listdir(args.inp)):
+            full = os.path.join(args.inp, name)
+            if not os.path.isfile(full):
+                continue
+            if args.cnf and not name.lower().endswith(".cnf"):
+                continue
+            input_paths.append(full)
     else:
-        # Sudoku puzzle text file
-        clauses, num_vars = to_cnf(args.inp)
+        # Single file
+        input_paths.append(args.inp)
 
-    status, _,  = solve_cnf_random(clauses, num_vars)
-    print(status)
-    status, _ = solve_cnf_dlcs(clauses, num_vars)
-    print(status)
-    status, _ = solve_cnf_jw(clauses, num_vars)
-    print(status)
-    status, _ = solve_cnf_mom(clauses, num_vars)
-    print(status)
+    # Run each file
+    for path in input_paths:
+        print(path)
+
+        if args.cnf:
+            clauses, num_vars = read_dimacs(path)
+        else:
+            clauses, num_vars = to_cnf(path)
+
+        # ---- RANDOM ----
+        status, _ = solve_cnf_random(clauses, num_vars)
+        print(status)
+
+        # ---- DLCS ----
+        status, _ = solve_cnf_dlcs(clauses, num_vars)
+        print(status)
+
+        # ---- JW ----
+        status, _ = solve_cnf_jw(clauses, num_vars)
+        print(status)
+
+        # ---- MOM ----
+        status, _ = solve_cnf_mom(clauses, num_vars)
+        print(status)
+
+        # Optional separator
+        print("-" * 40)
+
 
 
 def parse_dimacs(input_path: str) -> Tuple[Iterable[Iterable[int]], int]:
