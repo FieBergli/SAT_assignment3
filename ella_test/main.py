@@ -152,4 +152,4 @@ if __name__ == "__main__":
     main()
 
 
-# python3 main.py --in <instance folder> --cnf --out <output file name>.txt
+# what to run in terminal: python3 main.py --in <instance folder> --cnf --out <output file name>.txt

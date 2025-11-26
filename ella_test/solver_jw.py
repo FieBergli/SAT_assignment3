@@ -270,8 +270,8 @@ def build_model(assignment, num_vars):
 
 def solve_cnf_jw(clauses, num_vars, log=False):
     """
-    Implement your SAT solver here.
-    Must return:
+    Solve a CNF formula using the Jeroslow–Wang (JW) branching heuristic.
+    Return:
       ("SAT", model)  where model is a list of ints (DIMACS-style), or
       ("UNSAT", None)
     """
