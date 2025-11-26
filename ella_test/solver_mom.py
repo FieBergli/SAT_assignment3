@@ -135,7 +135,6 @@ def pure_literal_rule(clauses, assignment):
 def split(clauses, assignment, num_vars):
     """
     Chosen heuristic for splitting: Jeroslow Wang Two Sided
-
     """
     # filter out clauses that contain only unassigned variables
     unassigned_clauses = [
@@ -161,7 +160,7 @@ def split(clauses, assignment, num_vars):
 
     # pick variable with maximum score
     best_var = max(scores, key=scores.get)
-    # choose preferred polarity = whichever appears more often
+    # choose preferred polarity, so whichever appears more often
     pol_score = 0
     for c in min_clauses:
         if best_var in c:
@@ -169,7 +168,7 @@ def split(clauses, assignment, num_vars):
         if -best_var in c:
             pol_score -= 1
 
-    # prefer polarity with highest occurrence
+    # we prefer polarity with highest occurrence
     best_pref = pol_score >= 0
 
     return best_var, best_pref
